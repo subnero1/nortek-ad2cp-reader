@@ -3,6 +3,10 @@ import dayjs from 'dayjs'
 
 export { parseAd2cp }
 
+function parseAd2cp(data) {
+  return ad2cp.parse(data).data
+}
+
 const dateTime = {
   type: new Parser()
     .uint8('year')
@@ -809,6 +813,3 @@ const ad2cp = new Parser().useContextVars().array('data', {
     }),
   readUntil: 'eof',
 })
-function parseAd2cp(data) {
-  return ad2cp.parse(data).data
-}
