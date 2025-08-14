@@ -1,6 +1,8 @@
 import { Parser } from 'binary-parser';
 import dayjs from 'dayjs';
 
+export { parseAd2cp };
+
 const dateTime = {
   type: new Parser()
     .uint8('year')
@@ -818,6 +820,6 @@ const ad2cp = new Parser()
   )
 ;
 
-export function parseAd2cp(data) {
+function parseAd2cp(data) {
   return ad2cp.parse(data).data;
 }
