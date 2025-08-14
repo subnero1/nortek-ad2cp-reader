@@ -1,11 +1,11 @@
 <script setup>
-import * as ad2cp from './ad2cp';
+import * as nortek from './nortek';
 
 async function addFile(file) {
   if (file === undefined) { return; }
   const buffer = new Uint8Array(await file.arrayBuffer());
   console.log(buffer);
-  console.log(ad2cp.parse(buffer));
+  console.log(nortek.parseAd2cp(buffer));
 }
 </script>
 

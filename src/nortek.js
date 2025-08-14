@@ -780,45 +780,44 @@ const waveData = new Parser()
   )
 ;
 
-export function parse(data) {
-  const ad2cp = new Parser()
-    .useContextVars()
-    .array(
-      'data',
-      {
-        type: new Parser()
-          .nest({ type: header })
-          .saveOffset('dataStart')
-          .choice({
-            tag: 'dataSeriesId',
-            choices: {
-              0x1c: df3EchosounderData,
-              0x23: echosounderRawData,
-              0x24: echosounderRawData,
-              0x15: df3VelocityData,
-              0x16: df3VelocityData,
-              0x18: df3VelocityData,
-              0x1e: df3VelocityData,
-              0x1a: df3VelocityData,
-              0x1f: df3VelocityData,
-              0x20: df3SpectrumData,
-              0x30: waveData,
-              0xa0: new Parser().string('data', { length: 'dataSize'})
-            },
-            defaultChoice: new Parser(),
-          })
-          .saveOffset('__current__')
-          .seek(function() { 
-            const n = this['dataStart'] + this['dataSize'] - this['__current__'];
-            if (n != 0) {
-              console.warn(`Did not consume whole record: skipping ${n} bytes`, this)
-            }
-            return n
-          })
-          ,
-        readUntil: 'eof'
-      }
-    )
-    ;
+const ad2cp = new Parser()
+  .useContextVars()
+  .array(
+    'data',
+    {
+      type: new Parser()
+        .nest({ type: header })
+        .saveOffset('dataStart')
+        .choice({
+          tag: 'dataSeriesId',
+          choices: {
+            0x1c: df3EchosounderData,
+            0x23: echosounderRawData,
+            0x24: echosounderRawData,
+            0x15: df3VelocityData,
+            0x16: df3VelocityData,
+            0x18: df3VelocityData,
+            0x1e: df3VelocityData,
+            0x1a: df3VelocityData,
+            0x1f: df3VelocityData,
+            0x20: df3SpectrumData,
+            0x30: waveData,
+            0xa0: new Parser().string('data', { length: 'dataSize'})
+          },
+          defaultChoice: new Parser(),
+        })
+        .saveOffset('__current__')
+        .seek(function() { 
+          const n = this['dataStart'] + this['dataSize'] - this['__current__'];
+          if (n != 0) { console.warn(`Did not consume whole record: skipping ${n} bytes`, this) }
+          return n
+        })
+        ,
+      readUntil: 'eof'
+    }
+  )
+;
+
+export function parseAd2cp(data) {
   return ad2cp.parse(data).data;
 }
