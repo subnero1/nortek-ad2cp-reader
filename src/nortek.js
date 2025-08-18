@@ -1,7 +1,7 @@
 import { Parser } from 'binary-parser'
 import dayjs from 'dayjs'
 
-export { parseAd2cp }
+export { parseAd2cp, toNmea }
 
 function parseAd2cp(buffer) {
   return ad2cp.parse(buffer).records
@@ -374,8 +374,8 @@ const df3VelocityData = new Parser()
           2: 'BEAM',
           3: 'not used',
         }[value.coordinateSystem],
-          }
-        },
+      }
+    },
   })
   .saveOffset('__current__')
   .seek(function () {
@@ -789,3 +789,245 @@ const ad2cp = new Parser().useContextVars().array('records', {
     }),
   readUntil: 'eof',
 })
+
+function toNmea(data, types) {
+  types = types.map((type) => type.toUpperCase())
+  const sentences = []
+  for (const record of data) {
+    // Average
+    if (record.dataSeriesId == 0x16) {
+      for (const type of ['PNORI', 'PNORI1', 'PNORI2']) {
+        if (types.includes(type)) {
+          const tag = type === 'PNORI2'
+          sentences.push([
+            type,
+            (tag ? 'IT=' : '') +
+              {
+                Signature: 4,
+                'Aquadopp Generation 2': 0, // undocumented
+                'Awac Generation 2': 2, // undocumented
+              }[record.familyIdLabel],
+            (tag ? 'SN=' : '') + record.serialNumber,
+            (tag ? 'NB=' : '') + record.numberOfBeams,
+            (tag ? 'NC=' : '') + record.numberOfCells,
+            (tag ? 'BD=' : '') + record.blankingDistance.toFixed(2),
+            (tag ? 'CS=' : '') + record.cellSize.toFixed(2),
+            (tag ? 'CY=' : '') +
+              (type === 'PNORI' ? record.coordinateSystem : record.coordinateSystemLabel),
+          ])
+        }
+      }
+      for (const type of ['PNORS', 'PNORS1', 'PNORS2']) {
+        if (types.includes(type)) {
+          const tag = type === 'PNORS2'
+          let sentence = [
+            type,
+            (tag ? 'DATE=' : '') + record.dateTime.format('MMDDYY'),
+            (tag ? 'TIME=' : '') + record.dateTime.format('HHmmss'),
+            (tag ? 'EC=' : '') + '0',
+            (tag ? 'SC=' : '') + record.statusFlags.toString(16).toUpperCase().padStart(8, '0'),
+            (tag ? 'BV=' : '') + record.batteryVoltage.toFixed(1),
+            (tag ? 'SS=' : '') + record.speedOfSound.toFixed(1),
+            (tag ? 'HSD=' : '') + record.standardDeviationData.heading.toFixed(2),
+            (tag ? 'H=' : '') + record.heading.toFixed(1),
+            (tag ? 'PI=' : '') + record.pitch.toFixed(1),
+            (tag ? 'PISD=' : '') + record.standardDeviationData.pitch.toFixed(2),
+            (tag ? 'R=' : '') + record.roll.toFixed(1),
+            (tag ? 'RSD=' : '') + record.standardDeviationData.roll.toFixed(2),
+            (tag ? 'P=' : '') + record.pressure.toFixed(3),
+            (tag ? 'PSD=' : '') + record.standardDeviationData.pressure.toFixed(2),
+            (tag ? 'T=' : '') + record.temperature.toFixed(2),
+          ]
+          if (type === 'PNORS') {
+            sentence = sentence.filter((_, index) => ![7, 10, 12, 14].includes(index))
+          }
+          sentences.push(sentence)
+        }
+      }
+      for (const type of ['PNORC', 'PNORC1', 'PNORC2']) {
+        if (types.includes(type)) {
+          const tag = type === 'PNORC2'
+          let velocityTags = ['', '', '', '']
+          if (tag) {
+            if (record.coordinateSystemLabel === 'ENU') {
+              velocityTags = ['VE=', 'VN=', 'VU=', 'VU2=']
+            }
+            if (record.coordinateSystemLabel === 'XYZ') {
+              velocityTags = ['VX=', 'VY=', 'VZ=', 'VZ2=']
+            }
+            if (record.coordinateSystemLabel === 'BEAM') {
+              velocityTags = ['V1=', 'V2=', 'V3=', 'V4=']
+            }
+          }
+          for (let i = 0; i < record.numberOfCells; i++) {
+            let sentence = [
+              type,
+              (tag ? 'DATE=' : '') + record.dateTime.format('MMDDYY'),
+              (tag ? 'TIME=' : '') + record.dateTime.format('HHmmss'),
+              (tag ? 'CN=' : '') + (i + 1).toString(),
+              (tag ? 'CP=' : '') + (record.blankingDistance + (i + 1) * record.cellSize).toFixed(1),
+              velocityTags[0] + record.velocityData[0 * record.numberOfCells + i].toFixed(3),
+              velocityTags[1] + record.velocityData[1 * record.numberOfCells + i].toFixed(3),
+              velocityTags[2] + record.velocityData[2 * record.numberOfCells + i].toFixed(3),
+              velocityTags[3] +
+                (record.numberOfBeams == 4
+                  ? record.velocityData[3 * record.numberOfCells + i]
+                  : 0
+                ).toFixed(3),
+              0, // "Speed" in PNORC. Unclear what that's supposed to be.
+              0, // "Direction" in PNORC. Unclear what that's supposed to be.
+              (tag ? 'A1=' : '') + record.amplitudeData[0 * record.numberOfCells + i].toFixed(1),
+              (tag ? 'A2=' : '') + record.amplitudeData[1 * record.numberOfCells + i].toFixed(1),
+              (tag ? 'A3=' : '') + record.amplitudeData[2 * record.numberOfCells + i].toFixed(1),
+              (tag ? 'A4=' : '') +
+                (record.numberOfBeams == 4
+                  ? record.amplitudeData[3 * record.numberOfCells + i]
+                  : 0
+                ).toFixed(1),
+              (tag ? 'C1=' : '') + record.correlationData[0 * record.numberOfCells + i],
+              (tag ? 'C2=' : '') + record.correlationData[1 * record.numberOfCells + i],
+              (tag ? 'C3=' : '') + record.correlationData[2 * record.numberOfCells + i],
+              (tag ? 'C4=' : '') +
+                (record.numberOfBeams == 4
+                  ? record.correlationData[3 * record.numberOfCells + i]
+                  : 0),
+            ]
+            if (type === 'PNORC') {
+              sentence = sentence.filter((_, index) => ![4].includes(index))
+            } else {
+              sentence = sentence.filter((_, index) => ![9, 10].includes(index))
+            }
+            sentences.push(sentence)
+          }
+        }
+      }
+    }
+
+    // Wave
+    if (record.dataSeriesId == 0x30) {
+      if (types.includes('PNORW')) {
+        sentences.push([
+          'PNORW',
+          record.dateTime.format('MMDDYY'),
+          record.dateTime.format('HHmmss'),
+          record.spectrumType,
+          record.processingMethod,
+          record.waveData.height0.toFixed(2),
+          record.waveData.height3.toFixed(2),
+          record.waveData.height10.toFixed(2),
+          record.waveData.heightMax.toFixed(2),
+          record.waveData.periodMean.toFixed(2),
+          record.waveData.periodPeak.toFixed(2),
+          record.waveData.periodZ.toFixed(2),
+          record.waveData.directionAtPeakPeriod.toFixed(2),
+          record.waveData.spreadingAtPeakPeriod.toFixed(2),
+          record.waveData.waveDirectionMean.toFixed(2),
+          record.waveData.unidirectivityIndex.toFixed(2),
+          record.waveData.pressureMean.toFixed(2),
+          record.numberOfNoDetects,
+          record.numberOfBadDetects,
+          record.waveData.currentSpeedMean.toFixed(2),
+          record.waveData.currentDirectionMean.toFixed(2),
+          record.error.toString(16).toUpperCase().padStart(4, '0'),
+        ])
+      }
+      if (types.includes('PNORB')) {
+        sentences.push([
+          'PNORB',
+          record.dateTime.format('MMDDYY'),
+          record.dateTime.format('HHmmss'),
+          record.spectrumType,
+          record.processingMethod,
+          record.swellWaves.lowFrequency.toFixed(2),
+          record.swellWaves.highFrequency.toFixed(2),
+          record.swellWaves.height0.toFixed(2),
+          record.swellWaves.periodMean.toFixed(2),
+          record.swellWaves.periodPeak.toFixed(2),
+          record.swellWaves.directionAtPeakPeriod.toFixed(2),
+          record.swellWaves.spreadingAtPeakPeriod.toFixed(2),
+          record.swellWaves.waveDirectionMean.toFixed(2),
+          '0000', // undocumented
+        ])
+        sentences.push([
+          'PNORB',
+          record.dateTime.format('MMDDYY'),
+          record.dateTime.format('HHmmss'),
+          record.spectrumType,
+          record.processingMethod,
+          record.seaWaves.lowFrequency.toFixed(2),
+          record.seaWaves.highFrequency.toFixed(2),
+          record.seaWaves.height0.toFixed(2),
+          record.seaWaves.periodMean.toFixed(2),
+          record.seaWaves.periodPeak.toFixed(2),
+          record.seaWaves.directionAtPeakPeriod.toFixed(2),
+          record.seaWaves.spreadingAtPeakPeriod.toFixed(2),
+          record.seaWaves.waveDirectionMean.toFixed(2),
+          '0000', // undocumented
+        ])
+      }
+      if (types.includes('PNORE')) {
+        sentences.push([
+          'PNORE',
+          record.dateTime.format('MMDDYY'),
+          record.dateTime.format('HHmmss'),
+          record.spectrumType,
+          record.energySpectrum.lowFrequency.toFixed(2),
+          record.energySpectrum.stepFrequency.toFixed(2),
+          record.energySpectrum.nBins,
+          ...record.energySpectrum.data.map((value) => (value * 1e-4).toFixed(3)),
+          //                                                    ^^^^ undocumented
+        ])
+      }
+      if (types.includes('PNORF')) {
+        for (const [flagIndex, flag] of ['A1', 'B1', 'A2', 'B2'].entries()) {
+          sentences.push([
+            'PNORF',
+            flag,
+            record.dateTime.format('MMDDYY'),
+            record.dateTime.format('HHmmss'),
+            record.spectrumType,
+            record.fourierCoefficients.lowFrequency.toFixed(2),
+            record.fourierCoefficients.stepFrequency.toFixed(2),
+            record.fourierCoefficients.nBins,
+            ...record.fourierCoefficients.data
+              .slice(
+                flagIndex * record.fourierCoefficients.nBins,
+                (flagIndex + 1) * record.fourierCoefficients.nBins,
+              )
+              .map((value) => value.toFixed(4)),
+          ])
+        }
+      }
+      if (types.includes('PNORWD')) {
+        for (const [flagIndex, flag] of ['MD', 'DS'].entries()) {
+          sentences.push([
+            'PNORWD',
+            flag,
+            record.dateTime.format('MMDDYY'),
+            record.dateTime.format('HHmmss'),
+            record.spectrumType,
+            record.direction.lowFrequency.toFixed(2),
+            record.direction.stepFrequency.toFixed(2),
+            record.direction.nBins,
+            ...record.direction.data
+              .slice(flagIndex * record.direction.nBins, (flagIndex + 1) * record.direction.nBins)
+              .map((value) => value.toFixed(4)),
+          ])
+        }
+      }
+    }
+  }
+
+  return sentences
+    .map((fields) => {
+      const sentence = fields.join(',')
+      const checksum = new TextEncoder()
+        .encode(sentence)
+        .reduce((a, b) => a ^ b)
+        .toString(16)
+        .toUpperCase()
+        .padStart(2, '0')
+      return `$${sentence}*${checksum}`
+    })
+    .join('\n')
+}
