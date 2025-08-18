@@ -51,16 +51,16 @@ const header = new Parser()
   .uint8('syncByte', { assert: 0xa5 })
   .uint8('headerSize')
   .uint8('dataSeriesId')
-  .uint8('familyId', {
-    formatter: function (value) {
-      // prettier-ignore
-      switch (value) {
-          case 0x10: return 'Signature';
-          case 0x16: return 'DVL';
-          case 0x30: return 'Aquadopp Generation 2';
-          case 0x40: return 'Awac Generation 2';
-          default: return 'unknown';
-      }
+  .uint8('familyId')
+  .nest('familyIdLabel', {
+    type: new Parser(),
+    formatter: function () {
+      return {
+        0x10: 'Signature',
+        0x16: 'DVL',
+        0x30: 'Aquadopp Generation 2',
+        0x40: 'Awac Generation 2',
+      }[this.familyId]
     },
   })
   .choice('dataSize', {
@@ -197,60 +197,16 @@ const df3CurrentProfileData = new Parser()
       .bit1('internalProcessing')
       .bit1('extendedStatusShouldBeInterpreted'),
   })
+  .uint32le('statusFlags')
+  .seek(-4)
   .wrapped('status', {
     length: 4,
     wrapper: (buffer) => buffer.reverse(),
     type: new Parser()
-      .bit4('wakeUpState', {
-        formatter: function (value) {
-          // prettier-ignore
-          switch (value) {
-            case 0: return 'bad power'
-            case 1: return 'power applied'
-            case 2: return 'break'
-            case 3: return 'RTC alarm'
-            default: return 'unknown'
-          }
-        },
-      })
-      .bit3('orientation', {
-        formatter: function (value) {
-          // prettier-ignore
-          switch (value) {
-            case 0: return 'XUP'
-            case 1: return 'XDOWN'
-            case 2: return 'YUP'
-            case 3: return 'YDOWN'
-            case 4: return 'ZUP'
-            case 5: return 'ZDOWN'
-            case 7: return 'AHRS'
-            default: return 'unknown'
-          }
-        },
-      })
-      .bit3('autoOrientation', {
-        formatter: function (value) {
-          // prettier-ignore
-          switch (value) {
-            case 0: return 'Fixed'
-            case 1: return 'Auto'
-            case 3: return 'AHRS3D'
-            default: return 'unknown'
-          }
-        },
-      })
-      .bit4('previousWakeupState', {
-        formatter: function (value) {
-          // prettier-ignore
-          switch (value) {
-            case 0: return 'bad power'
-            case 1: return 'power applied'
-            case 2: return 'break'
-            case 3: return 'RTC alarm'
-            default: return 'unknown'
-          }
-        },
-      })
+      .bit4('wakeUpState')
+      .bit3('orientation')
+      .bit3('autoOrientation')
+      .bit4('previousWakeupState')
       .bit1('previousMeasurementSkippedDueToLowVoltage')
       .bit1('activeConfiguration')
       .bit4('echosounderIndex', {
@@ -264,11 +220,43 @@ const df3CurrentProfileData = new Parser()
       .bit3('__skip1__')
       .bit1('blankingDistanceScalingInCm')
       .bit1('__skip2__'),
+    formatter: function (value) {
+      return {
+        ...value,
+        wakeUpStateLabel: {
+          0: 'bad power',
+          1: 'power applied',
+          2: 'break',
+          3: 'RTC alarm',
+        }[value.wakeUpState],
+        orientationLabel: {
+          0: 'XUP',
+          1: 'XDOWN',
+          2: 'YUP',
+          3: 'YDOWN',
+          4: 'ZUP',
+          5: 'ZDOWN',
+          7: 'AHRS',
+        }[value.orientation],
+        autoOrientationLabel: {
+          0: 'Fixed',
+          1: 'Auto',
+          2: 'Auto3D',
+          3: 'AHRS3D',
+        }[value.autoOrientation],
+        previousWakeupStateLabel: {
+          0: 'bad power',
+          1: 'power applied',
+          2: 'break',
+          3: 'RTC alarm',
+        }[value.previousWakeupState],
+      }
+    },
   })
-  .seek(-36)
+  .seek(-38)
   .uint16le('blankingDistance', {
     formatter: function (value) {
-      return value * (this['blankingDistanceScalingInCm'] ? 0.01 : 0.001)
+      return value * (this['status']['blankingDistanceScalingInCm'] ? 0.01 : 0.001)
     },
   })
 const df3EchosounderData = new Parser()
@@ -303,52 +291,10 @@ const echosounderRawData = new Parser()
     length: 4,
     wrapper: (buffer) => buffer.reverse(),
     type: new Parser()
-      .bit4('wakeUpState', {
-        formatter: function (value) {
-          // prettier-ignore
-          switch (value) {
-            case 0: return 'bad power'
-            case 1: return 'power applied'
-            case 2: return 'break'
-            case 3: return 'RTC alarm'
-            default: return 'unknown'
-          }
-        },
-      })
-      .bit3('orientation', {
-        formatter: function (value) {
-          // prettier-ignore
-          switch (value) {
-            case 4: return 'UP'
-            case 5: return 'DOWN'
-            case 7: return 'AHRS'
-            default: return 'unknown'
-          }
-        },
-      })
-      .bit3('autoOrientation', {
-        formatter: function (value) {
-          // prettier-ignore
-          switch (value) {
-            case 0: return 'Fixed'
-            case 1: return 'Auto'
-            case 2: return 'Auto3D'
-            case 3: return 'AHRS3D'
-          }
-        },
-      })
-      .bit4('previousWakeupState', {
-        formatter: function (value) {
-          // prettier-ignore
-          switch (value) {
-            case 0: return 'bad power'
-            case 1: return 'power applied'
-            case 2: return 'break'
-            case 3: return 'RTC alarm'
-            default: return 'unknown'
-          }
-        },
-      })
+      .bit4('wakeUpState')
+      .bit3('orientation')
+      .bit3('autoOrientation')
+      .bit4('previousWakeupState')
       .bit1('lastMeasurementLowVoltageSkip')
       .bit1('activeConfiguration')
       .bit4('echoIndex', {
@@ -362,6 +308,38 @@ const echosounderRawData = new Parser()
       .bit3('__skip1__')
       .bit1('blankingDistanceScalingInCm')
       .bit1('__skip2__'),
+    formatter: function (value) {
+      return {
+        ...value,
+        wakeUpStateLabel: {
+          0: 'bad power',
+          1: 'power applied',
+          2: 'break',
+          3: 'RTC alarm',
+        }[value.wakeUpState],
+        orientationLabel: {
+          0: 'XUP',
+          1: 'XDOWN',
+          2: 'YUP',
+          3: 'YDOWN',
+          4: 'ZUP',
+          5: 'ZDOWN',
+          7: 'AHRS',
+        }[value.orientation],
+        autoOrientationLabel: {
+          0: 'Fixed',
+          1: 'Auto',
+          2: 'Auto3D',
+          3: 'AHRS3D',
+        }[value.autoOrientation],
+        previousWakeupStateLabel: {
+          0: 'bad power',
+          1: 'power applied',
+          2: 'break',
+          3: 'RTC alarm',
+        }[value.previousWakeupState],
+      }
+    },
   })
   .uint32le('serialNumber')
   .uint32le('numberOfSamples')
@@ -386,26 +364,24 @@ const df3VelocityData = new Parser()
   .wrapped({
     length: 2,
     wrapper: (buffer) => buffer.reverse(),
-    type: new Parser()
-      .bit4('numberOfBeams')
-      .bit2('coordinateSystem', {
-        formatter: (value) => {
-          // prettier-ignore
-          switch (value) {
-            case 0: return 'ENU'
-            case 1: return 'XYZ'
-            case 2: return 'BEAM'
-            case 3: return 'not used'
+    type: new Parser().bit4('numberOfBeams').bit2('coordinateSystem').bit10('numberOfCells'),
+    formatter: function (value) {
+      return {
+        ...value,
+        coordinateSystemLabel: {
+          0: 'ENU',
+          1: 'XYZ',
+          2: 'BEAM',
+          3: 'not used',
+        }[value.coordinateSystem],
           }
         },
-      })
-      .bit10('numberOfCells'),
   })
   .saveOffset('__current__')
   .seek(function () {
     return this['dataStart'] + this['offsetOfData'] - this['__current__']
   })
-  .choice('__skip__', {
+  .choice({
     // Undocumented. This seems to work for the listed record types...
     tag: 'dataSeriesId',
     choices: {
@@ -416,11 +392,7 @@ const df3VelocityData = new Parser()
     },
   })
   .array('velocityData', {
-    type: new Parser().int16le('v', {
-      formatter: function (value) {
-        return 10 ** this.$parent['VelocityScaling'] * value
-      },
-    }),
+    type: new Parser().int16le(),
     length: function () {
       return (
         this['numberOfBeams'] *
@@ -429,13 +401,12 @@ const df3VelocityData = new Parser()
         this['hasCorrelationData']
       )
     },
+    formatter: function (values) {
+      return values.map((value) => value * 10 ** this['velocityScaling'])
+    },
   })
   .array('amplitudeData', {
-    type: new Parser().uint8('v', {
-      formatter: function (value) {
-        return 0.5 * value
-      },
-    }),
+    type: new Parser().uint8(),
     length: function () {
       return (
         this['numberOfBeams'] *
@@ -443,6 +414,9 @@ const df3VelocityData = new Parser()
         this['hasAmplitudeData'] *
         this['hasCorrelationData']
       )
+    },
+    formatter: function (values) {
+      return values.map((value) => 0.5 * value)
     },
   })
   .array('correlationData', {
@@ -551,7 +525,6 @@ const df3VelocityData = new Parser()
     },
   })
 const df3SpectrumData = new Parser()
-  .useContextVars()
   .nest({ type: df3CurrentProfileData })
   .saveOffset('__current__')
   .seek(function () {
@@ -602,6 +575,7 @@ const waveData = new Parser()
   .uint32le('serialNumber')
   .nest('dateTime', dateTime)
   .uint16le('waveCounter')
+  .uint32le('errorFlags')
   .nest('error', {
     type: new Parser()
       .bit1('noPressure')
@@ -619,40 +593,42 @@ const waveData = new Parser()
       .bit1('correlation')
       .bit19('__skip__'),
   })
-  .nest('utatus', {
+  .nest('status', {
     type: new Parser().bit16('__skip1__').bit1('activeConfiguration').bit15('__skip2__'),
   })
-  .uint8('spectrumType', {
-    formatter: function (value) {
+  .uint8('spectrumType')
+  .nest('spectrumTypeLabel', {
+    type: new Parser(),
+    formatter: function () {
       // prettier-ignore
-      switch (value) {
-        case 0: return 'Pressure'
-        case 1: return 'Velocity'
-        case 2: return 'Auto depth'
-        case 3: return 'AST only'
-        default: return 'unknown'
-      }
+      return {
+        0: 'Pressure',
+        1: 'Velocity',
+        2: 'Auto depth',
+        3: 'AST only',
+      }[this.spectrumType]
     },
   })
-  .uint8('processingMethod', {
-    formatter: function (value) {
+  .uint8('processingMethod')
+  .nest('processingMethodLabel', {
+    type: new Parser(),
+    formatter: function () {
       // prettier-ignore
-      switch (value) {
-        case 2: return 'SUV'
-        case 4: return 'MLMST'
-        default: return 'unknown'
-      }
+      return {
+        2: 'SUV',
+        4: 'MLMST',
+      }[this.processingMethod]
     },
   })
   .uint8('targetCell')
-  .uint8('__skip2__')
+  .seek(1)
   .uint16le('numberOfNoDetects')
   .uint16le('numberOfBadDetects')
   .floatle('cutOffFrequency')
   .floatle('processingTime')
   .uint16le('numberOfZeroCrossings')
   .string('versionString', { length: 4 })
-  .array('__skip3__', { type: new Parser().uint8(), length: 54 })
+  .seek(54)
   .saveOffset('__current__')
   .seek(function () {
     return this['dataStart'] + this['offsetOfData'] - this['__current__']
@@ -684,7 +660,7 @@ const waveData = new Parser()
         .floatle('currentSpeedMean')
         .floatle('currentDirectionMean')
         .floatle('astMeanDistance')
-        .array('__skip__', { type: new Parser().uint8(), length: 20 }),
+        .seek(20),
     },
   })
   .choice('swellWaves', {
@@ -702,7 +678,7 @@ const waveData = new Parser()
         .floatle('directionAtPeakPeriod')
         .floatle('waveDirectionMean')
         .floatle('spreadingAtPeakPeriod')
-        .array('__skip__', { type: new Parser().uint8(), length: 20 }),
+        .seek(20),
     },
   })
   .choice('seaWaves', {
@@ -720,7 +696,7 @@ const waveData = new Parser()
         .floatle('directionAtPeakPeriod')
         .floatle('waveDirectionMean')
         .floatle('spreadingAtPeakPeriod')
-        .array('__skip__', { type: new Parser().uint8(), length: 20 }),
+        .seek(20),
     },
   })
   .choice('energySpectrum', {
@@ -734,7 +710,7 @@ const waveData = new Parser()
         .floatle('highFrequency')
         .floatle('stepFrequency')
         .uint16le('nBins')
-        .array('__skip__', { type: new Parser().uint8(), length: 22 })
+        .seek(22)
         .array('data', {
           type: new Parser().floatle(),
           length: 'nBins',
@@ -752,7 +728,7 @@ const waveData = new Parser()
         .floatle('highFrequency')
         .floatle('stepFrequency')
         .uint16le('nBins')
-        .array('__skip__', { type: new Parser().uint8(), length: 22 })
+        .seek(22)
         .array('data', {
           type: new Parser().floatle(),
           length: function () {
@@ -772,7 +748,7 @@ const waveData = new Parser()
         .floatle('highFrequency')
         .floatle('stepFrequency')
         .uint16le('nBins')
-        .array('__skip__', { type: new Parser().uint8(), length: 22 })
+        .seek(22)
         .array('data', {
           type: new Parser().floatle(),
           length: function () {
