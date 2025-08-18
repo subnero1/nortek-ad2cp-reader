@@ -3,8 +3,8 @@ import dayjs from 'dayjs'
 
 export { parseAd2cp }
 
-function parseAd2cp(data) {
-  return ad2cp.parse(data).data
+function parseAd2cp(buffer) {
+  return ad2cp.parse(buffer).records
 }
 
 const dateTime = {
@@ -781,7 +781,7 @@ const waveData = new Parser()
         }),
     },
   })
-const ad2cp = new Parser().useContextVars().array('data', {
+const ad2cp = new Parser().useContextVars().array('records', {
   type: new Parser()
     .nest({ type: header })
     .saveOffset('dataStart')
