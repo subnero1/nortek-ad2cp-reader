@@ -951,7 +951,7 @@ function toNmea(data, types) {
           record.numberOfBadDetects,
           record.waveData.currentSpeedMean.toFixed(2),
           record.waveData.currentDirectionMean.toFixed(2),
-          record.error.toString(16).toUpperCase().padStart(4, '0'),
+          record.errorFlags.toString(16).toUpperCase().padStart(4, '0'),
         ])
       }
       if (types.includes('PNORB')) {
