@@ -51,6 +51,29 @@ const header = new Parser()
   .uint8('syncByte', { assert: 0xa5 })
   .uint8('headerSize')
   .uint8('dataSeriesId')
+  .nest('dataSeriesIdLabel', {
+    type: new Parser(),
+    formatter: function () {
+      return {
+        0x15: 'Burst data as DF3',
+        0x16: 'Average data as DF3',
+        0x17: 'Bottom Track Data Record',
+        0x18: 'Interleaved Burst Data Record (beam 5)',
+        0x1e: 'Altimeter Record',
+        0x1f: 'Avg Altimeter Raw Record',
+        0x1a: 'Burst Altimeter Raw Record',
+        0x1b: 'DVL Bottom Track Record',
+        0x1c: 'Echo Sounder Record',
+        0x23: 'Echo Sounder Raw Record',
+        0x24: 'Echo Sounder Raw Tx Record',
+        0x26: 'Average data as DF7',
+        0x30: 'Processed Wave Data Record',
+        0x1d: 'DVL Water Track Record',
+        0xc8: 'Vector 2 data as DF8',
+        0xa0: 'String Data Record',
+      }[this.dataSeriesId]
+    },
+  })
   .uint8('familyId')
   .nest('familyIdLabel', {
     type: new Parser(),
