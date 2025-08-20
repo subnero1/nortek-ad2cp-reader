@@ -4,12 +4,12 @@ import { computed } from 'vue'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
 import { LineChart, GaugeChart } from 'echarts/charts'
-import { GridComponent, TitleComponent, DataZoomComponent } from 'echarts/components'
+import { GridComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
 
 import { records } from './store.js'
 
-use([SVGRenderer, LineChart, GaugeChart, GridComponent, TitleComponent, DataZoomComponent])
+use([SVGRenderer, LineChart, GaugeChart, GridComponent])
 
 const timeSeriesOptions = Object.freeze({
   grid: { top: '5%', bottom: 0, containLabel: true },
