@@ -84,7 +84,7 @@ const gaugeLineWidth = 10
         />
       </div>
       <div class="chart">
-        <h3>Temperature</h3>
+        <h3>Water Temperature</h3>
         <VChart
           :option="{
             ...timeSeriesOptions,
