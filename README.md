@@ -1,35 +1,23 @@
 # nortek-ad2cp-reader
 
-This template should help get you started developing with Vue 3 in Vite.
+Read Nortek AD2CP files using a fully offline, don't-install-anything HTML app!
 
-## Recommended IDE Setup
+![](README-screenshot.png)
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Using
 
-## Customize configuration
+Just [download](todo) and double-click!
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## Building
 
-## Project Setup
-
-```sh
+```bash
 npm install
+npm run dev  # For developing
+npm build  # To make the final build
 ```
 
-### Compile and Hot-Reload for Development
+This requires [node.js](https://nodejs.org/) to be installed.
 
-```sh
-npm run dev
-```
+## Contributing
 
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+Want to add your own custom plot? Spotted something that's not quite right? Raise an issue or PR and let us know! However, please be advised that we may at some point integrate parts or all of this tool into our [SWIS-ADCP product](https://subnero.com/solutions/swis) (under the usual T&C of the MIT license). By contributing to this repository, you are acknowledging that you are okay with this.
