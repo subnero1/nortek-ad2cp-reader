@@ -60,4 +60,11 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  build: {
+    rollupOptions: {
+      input: {
+        app: './nortek-ad2cp-reader.html',
+      },
+    },
+  },
 })
