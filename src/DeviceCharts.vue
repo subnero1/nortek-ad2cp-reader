@@ -7,6 +7,7 @@ import { LineChart, GaugeChart } from 'echarts/charts'
 import { GridComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
 
+import RawData from './RawData.vue'
 import { records } from './store.js'
 
 use([SVGRenderer, LineChart, GaugeChart, GridComponent])
@@ -14,6 +15,7 @@ use([SVGRenderer, LineChart, GaugeChart, GridComponent])
 const timeSeriesOptions = Object.freeze({
   grid: { top: '5%', bottom: 0, containLabel: true },
   xAxis: { type: 'time', splitNumber: 4 },
+  color: 'rgb(64,64,64)',
 })
 
 const data = computed(() => {
@@ -57,7 +59,27 @@ const data = computed(() => {
   }
 })
 
-const gaugeLineWidth = 10
+const rawData = computed(() => {
+  const lines = [
+    ['DateTime', 'BatteryVoltage', 'Temperature', 'Pressure', 'Heading', 'Pitch', 'Roll'].join(','),
+  ]
+  for (const record of records.value) {
+    const line = [
+      record.dateTime?.format('YYYY-MM-DDThh:mm:ss'),
+      record.batteryVoltage?.toFixed(1),
+      record.temperature?.toFixed(2),
+      record.pressure?.toFixed(3),
+      record.heading?.toFixed(1),
+      record.pitch?.toFixed(1),
+      record.roll?.toFixed(1),
+    ]
+    if (line.some((v) => v === undefined)) continue
+    lines.push(line.join(','))
+  }
+  return lines.join('\n')
+})
+
+const gaugeLineWidth = 20
 </script>
 
 <template>
@@ -137,8 +159,16 @@ const gaugeLineWidth = 10
               center: ['30%', '90%'],
               radius: '170%',
               splitNumber: 3,
-              splitLine: { distance: -gaugeLineWidth },
-              axisTick: { splitNumber: 3, distance: -gaugeLineWidth },
+              splitLine: {
+                length: gaugeLineWidth,
+                distance: -gaugeLineWidth,
+              },
+              axisTick: {
+                splitNumber: 3,
+                length: gaugeLineWidth,
+                distance: -gaugeLineWidth,
+              },
+              axisLabel: { distance: gaugeLineWidth + 10 },
               axisLine: {
                 lineStyle: {
                   width: gaugeLineWidth,
@@ -164,9 +194,12 @@ const gaugeLineWidth = 10
               max: 0,
               radius: '90%',
               splitNumber: 4,
-              splitLine: { distance: -gaugeLineWidth },
-              axisTick: { splitNumber: 2, distance: -gaugeLineWidth },
-              axisLabel: { formatter: () => '' },
+              splitLine: { length: gaugeLineWidth, distance: -gaugeLineWidth },
+              axisTick: { splitNumber: 2, length: gaugeLineWidth, distance: -gaugeLineWidth },
+              axisLabel: {
+                distance: gaugeLineWidth + 10,
+                formatter: (angle) => ({ 0: 'E', 90: 'N', 180: 'W', 270: 'S', 360: '' })[angle],
+              },
               axisLine: {
                 lineStyle: {
                   width: gaugeLineWidth,
@@ -192,9 +225,12 @@ const gaugeLineWidth = 10
               max: 0,
               radius: '90%',
               splitNumber: 4,
-              splitLine: { distance: -gaugeLineWidth },
-              axisTick: { splitNumber: 2, distance: -gaugeLineWidth },
-              axisLabel: { formatter: () => '' },
+              splitLine: { length: gaugeLineWidth, distance: -gaugeLineWidth },
+              axisTick: { splitNumber: 2, length: gaugeLineWidth, distance: -gaugeLineWidth },
+              axisLabel: {
+                distance: gaugeLineWidth + 10,
+                formatter: (angle) => ({ 0: 'E', 90: 'N', 180: 'W', 270: 'S', 360: '' })[angle],
+              },
               axisLine: {
                 lineStyle: {
                   width: gaugeLineWidth,
@@ -210,11 +246,11 @@ const gaugeLineWidth = 10
       </div>
     </div>
   </div>
+  <RawData :data="rawData" class="mt-16" />
 </template>
 
 <style scoped>
 @reference "./style.css";
-
 div.chart {
   @apply w-fit;
 }
