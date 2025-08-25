@@ -6,7 +6,7 @@ Read Nortek AD2CP files using a fully offline, don't-install-anything HTML app!
 
 ## Using
 
-Just [download](todo) and double-click!
+Just [download](https://github.com/subnero1/nortek-ad2cp-reader/releases/) and double-click!
 
 ## Building
 
