@@ -136,7 +136,7 @@ function pickDirection(event) {
     <div class="text-xs flex flex-col gap-2">
       <div class="flex flex-col gap-1">
         <div>Coordinates: {{ data.coordinateSystem }}</div>
-        <div class="mb-2">Max: {{ data.referenceVelocity.toPrecision(1) }} m/s</div>
+        <div class="mb-2">Max: {{ data.referenceVelocity.toFixed(1) }} m/s</div>
       </div>
       <div class="flex flex-col gap-2">
         <label
