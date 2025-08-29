@@ -4,8 +4,12 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import { viteSingleFile } from 'vite-plugin-singlefile'
 import tailwindcss from '@tailwindcss/vite'
-import fs from 'node:fs/promises'
+import path from 'node:path'
+import fsp from 'node:fs/promises'
 import { getProjectLicenses } from 'generate-license-file'
+
+const buildPath = './build'
+const generatedLicensePath = path.join(buildPath, 'LicensePage.vue')
 
 export default defineConfig({
   // prettier-ignore
@@ -16,12 +20,15 @@ export default defineConfig({
     tailwindcss(),
     {
       name: 'generate-license-page', 
-      async buildStart() {
+      buildStart: async () => {
+        console.log('Creating build folder...')
+        await fsp.mkdir(buildPath, { recursive: true })
+
         console.log('Generating license page...')
-        const ourLicense = await fs.readFile('./LICENSE.md', 'utf-8')
+        const ourLicense = await fsp.readFile('./LICENSE.md', 'utf-8')
         const thirdPartyLicenses = await getProjectLicenses("./package.json")
-        await fs.writeFile(
-          './dist/LicensePage.vue', 
+        await fsp.writeFile(
+          generatedLicensePath, 
 `<template>
   <pre class="mt-0 text-neutral bg-base-100">${ourLicense}</pre>
 
@@ -49,6 +56,10 @@ export default defineConfig({
   </div>
 </template>`
         )
+      },
+      closeBundle: async () => {
+        console.log('Removing build folder...')
+        await fsp.rm(buildPath, { recursive: true, force: true })
       }
     }
   ],

@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import MainPage from './MainPage.vue'
-import LicensePage from '../dist/LicensePage.vue'
+import LicensePage from '../build/LicensePage.vue'
 const showLicense = ref(false)
 </script>
 
