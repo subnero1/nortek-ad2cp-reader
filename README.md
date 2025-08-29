@@ -1,4 +1,4 @@
-# nortek-ad2cp-reader
+# Nortek AD2CP Reader
 
 Read Nortek AD2CP files using a fully offline, don't-install-anything HTML app!
 
