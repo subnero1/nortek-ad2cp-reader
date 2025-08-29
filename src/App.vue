@@ -1,5 +1,5 @@
 <script setup>
-import { ref, KeepAlive } from 'vue'
+import { ref } from 'vue'
 import MainPage from './MainPage.vue'
 import LicensePage from '../dist/LicensePage.vue'
 const showLicense = ref(false)

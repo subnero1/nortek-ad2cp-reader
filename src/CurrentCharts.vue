@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, useTemplateRef, onMounted } from 'vue'
+import { ref, computed, watch, useTemplateRef } from 'vue'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
 import { LineChart, GaugeChart } from 'echarts/charts'

@@ -24,13 +24,13 @@ const labels = Object.freeze({
     <tbody>
       <tr>
         <th>Type</th>
-        <td v-for="(count, type) in counts">
+        <td v-for="(_, type) in counts" :key="type">
           {{ labels[type] }}
         </td>
       </tr>
       <tr>
         <th>Count</th>
-        <td v-for="(count, type) in counts">
+        <td v-for="(count, type) in counts" :key="type">
           {{ count }}
         </td>
       </tr>
