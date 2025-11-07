@@ -95,6 +95,7 @@ const header = new Parser()
   })
   .uint16le('dataChecksum')
   .uint16le('headerChecksum')
+
 const commonData = new Parser()
   .uint8('version')
   .uint8('offsetOfData')
@@ -166,6 +167,7 @@ const commonData = new Parser()
   .int16le('realTimeClockTemperature')
   .nest('errorStatus', errorStatus)
   .uint32le('ensembleCounter')
+
 const df3CurrentProfileData = new Parser()
   .nest({ type: commonData })
   .saveOffset('__current__')
@@ -282,6 +284,7 @@ const df3CurrentProfileData = new Parser()
       return value * (this['status']['blankingDistanceScalingInCm'] ? 0.01 : 0.001)
     },
   })
+
 const df3EchosounderData = new Parser()
   .nest({ type: df3CurrentProfileData })
   .saveOffset('__current__')
@@ -305,6 +308,7 @@ const df3EchosounderData = new Parser()
       return this['numberOfCells']
     },
   })
+
 const echosounderRawData = new Parser()
   .uint8('version')
   .uint8('offsetOfData')
@@ -377,6 +381,7 @@ const echosounderRawData = new Parser()
       return 2 * this['numberOfSamples']
     },
   })
+
 const df3VelocityData = new Parser()
   .nest({ type: df3CurrentProfileData })
   .saveOffset('__current__')
@@ -547,6 +552,7 @@ const df3VelocityData = new Parser()
         }),
     },
   })
+
 const df3SpectrumData = new Parser()
   .nest({ type: df3CurrentProfileData })
   .saveOffset('__current__')
@@ -581,6 +587,7 @@ const df3SpectrumData = new Parser()
         }),
     },
   })
+
 const waveData = new Parser()
   .uint8('version')
   .uint8('offsetOfData')
@@ -780,6 +787,7 @@ const waveData = new Parser()
         }),
     },
   })
+
 const ad2cp = new Parser().useContextVars().array('records', {
   type: new Parser()
     .nest({ type: header })
