@@ -588,6 +588,242 @@ const df3SpectrumData = new Parser()
     },
   })
 
+const df7CurrentProfileData = new Parser()
+  .uint8('version')
+  .uint8('instrumentType' /*{ assert: 0x26 }*/) // TODO
+  .nest('instrumentTypeLabel', {
+    type: new Parser(),
+    formatter: function () {
+      return 'Generation 2 Aquadopp or AWAC'
+    },
+  })
+  .uint16le('offsetOfData')
+  .wrapped({
+    length: 4,
+    wrapper: (buffer) => buffer.reverse(),
+    type: new Parser()
+      .bit16('__skip2__')
+      .bit4('totalNumberOfBeams')
+      .bit4('numberOfSlantedBeams')
+      .bit3('__skip1__')
+      .bit1('hasRechargeBattery')
+      .bit1('hasTiltSensor')
+      .bit1('hasCompassSensor')
+      .bit1('hasTemperatureSensor')
+      .bit1('hasPressureSensor'),
+  })
+  .wrapped({
+    length: 4,
+    wrapper: (buffer) => buffer.reverse(),
+    type: new Parser()
+      .bit23('__skip3__')
+      .bit1('stmIncluded')
+      .bit1('ctdIncluded')
+      .bit1('rechargeBatteryIncluded')
+      .bit1('altimeterDataIncluded')
+      .bit1('qualityDataIncluded')
+      .bit1('percentGoodDataIncluded')
+      .bit1('correlationIncluded')
+      .bit1('amplitudeIncluded')
+      .bit1('velocityIncluded'),
+  })
+  .wrapped({
+    length: 8,
+    wrapper: (buffer) => buffer.reverse(),
+    type: new Parser()
+      .bit26('__skip4__')
+      .bit1('stmValuesValid')
+      .bit1('ctdConductivityValid')
+      .bit1('ctdPressureValid')
+      .bit1('ctdTemperatureValid')
+      .bit1('nominalCorrelationValid')
+      .bit1('numberOfAveragedPingsValid')
+      .bit1('depthAverageDirectionValid')
+      .bit1('depthAverageSpeedValid')
+      .bit1('statusValid')
+      .bit1('errorValid')
+      .bit1('powerLevelValid')
+      .bit1('velocityScaleValid')
+      .bit1('ambiguityVelocityValid')
+      .bit1('accelerometerRawValid')
+      .bit1('magnetometerRawValid')
+      .bit1('temperatureRealTimeClockValid')
+      .bit1('temperatureInMagnetometerValid')
+      .bit1('temperatureInPressureSensorValid')
+      .bit1('batteryVoltageValid')
+      .bit1('blankingValid')
+      .bit1('cellSizeValid')
+      .bit1('numberOfCellsValid')
+      .bit1('coordinateSystemValid')
+      .bit1('numberOfBeamsValid')
+      .bit1('standardDeviationRollValid')
+      .bit1('standardDeviationPitchValid')
+      .bit1('standardDeviationHeadingValid')
+      .bit1('standardDeviationPressureValid')
+      .bit1('rollValid')
+      .bit1('pitchValid')
+      .bit1('headingValid')
+      .bit1('absolutePressureIncluded')
+      .bit1('pressureIncluded')
+      .bit1('waterTemperatureValid')
+      .bit1('speedOfSoundValid')
+      .bit1('microsecondsValid')
+      .bit1('dateTimeValid')
+      .bit1('serialNumberValid'),
+  })
+  .uint32le('serialNumber')
+  .nest('dateTime', dateTime)
+  .floatle('speedOfSound')
+  .floatle('temperature')
+  .floatle('pressure')
+  .floatle('absolutePressure')
+  .floatle('heading')
+  .floatle('pitch')
+  .floatle('roll')
+  .nest('standardDeviationData', {
+    type: new Parser().floatle('pressure').floatle('heading').floatle('pitch').floatle('roll'),
+  })
+  .uint8('numberOfBeams')
+  .uint8('coordinateSystem')
+  .nest('coordinateSystemLabel', {
+    type: new Parser(),
+    formatter: function () {
+      return {
+        0: 'ENU',
+        1: 'XYZ',
+        2: 'BEAM',
+        3: 'not used',
+      }[this.coordinateSystem]
+    },
+  })
+  .uint16le('numberOfCells')
+  .floatle('cellSize')
+  .floatle('blankingDistance')
+  .floatle('batteryVoltage')
+  .floatle('pressureSensorTemperature')
+  .floatle('magnetometerTemperature')
+  .floatle('realTimeClockTemperature')
+  .array('magnetometer', {
+    type: new Parser().floatle(),
+    length: 3,
+  })
+  .array('accelerometer', {
+    type: new Parser().floatle(),
+    length: 3,
+  })
+  .floatle('ambiguityVelocity')
+  .floatle('velocityScaling')
+  .floatle('powerLevel')
+  .nest('errorStatus', errorStatus)
+  .uint16le('__skip5__')
+  .wrapped('status', {
+    length: 4,
+    wrapper: (buffer) => buffer.reverse(),
+    type: new Parser()
+      .bit1('isAverageData')
+      .bit1('activeConfiguration')
+      .bit1('lastMeasurementLowVoltageSkip')
+      .bit1('inAir')
+      .bit12('__skip6__')
+      .bit4('previousWakeupState')
+      .bit3('autoOrientation')
+      .bit1('__skip7__')
+      .bit4('orientation')
+      .bit4('wakeUpState'),
+    formatter: function (value) {
+      return {
+        ...value,
+        previousWakeupStateLabel: {
+          0: 'bad power',
+          1: 'power applied',
+          2: 'break',
+          3: 'RTC alarm',
+        }[value.previousWakeupState],
+        autoOrientationLabel: {
+          0: 'Fixed',
+          1: 'Auto',
+          2: 'Auto3D',
+          3: 'AHRS3D',
+        }[value.autoOrientation],
+        orientationLabel: {
+          4: 'UP',
+          5: 'DOWN',
+          7: 'AHRS',
+        }[value.orientation],
+        wakeUpStateLabel: {
+          0: 'bad power',
+          1: 'power applied',
+          2: 'break',
+          3: 'RTC alarm',
+        }[value.wakeUpState],
+      }
+    },
+  })
+  .floatle('averageDepthSpeed')
+  .floatle('averageDepthDirection')
+  .uint16le('numberOfAveragedPings')
+  .uint16le('nominalCorrelation')
+  .array('__skip8__', {
+    type: new Parser().uint8(),
+    length: function () {
+      return this['offsetOfData'] - 160
+    },
+  })
+  .array('velocityData', {
+    type: new Parser().int16le(),
+    length: function () {
+      return this['numberOfBeams'] * this['numberOfCells'] * this['velocityIncluded']
+    },
+    formatter: function (values) {
+      return values.map((value) => value * this['velocityScaling'])
+    },
+  })
+  .array('amplitudeData', {
+    type: new Parser().uint8(),
+    length: function () {
+      return this['numberOfBeams'] * this['numberOfCells'] * this['amplitudeIncluded']
+    },
+    formatter: function (values) {
+      return values.map((value) => 0.5 * value)
+    },
+  })
+  .array('correlationData', {
+    type: new Parser().uint8(),
+    length: function () {
+      return this['numberOfBeams'] * this['numberOfCells'] * this['correlationIncluded']
+    },
+  })
+  .array('percentageGoodData', {
+    type: new Parser().uint8(),
+    length: function () {
+      return this['numberOfCells'] * this['percentGoodDataIncluded']
+    },
+  })
+  .array('qualityData', {
+    type: new Parser().uint16le(),
+    length: function () {
+      return this['numberOfCells'] * this['qualityDataIncluded']
+    },
+  })
+  .choice('ctdData', {
+    tag: 'ctdIncluded',
+    choices: {
+      0: new Parser(),
+      1: new Parser().floatle('conductivity').floatle('temperature').floatle('pressure'),
+    },
+  })
+  .choice('stmData', {
+    tag: 'stmIncluded',
+    choices: {
+      0: new Parser(),
+      1: new Parser()
+        .floatle('scattering')
+        .floatle('highRange')
+        .floatle('stdDevScattering')
+        .floatle('stdDevHighRange'),
+    },
+  })
+
 const waveData = new Parser()
   .uint8('version')
   .uint8('offsetOfData')
@@ -805,6 +1041,7 @@ const ad2cp = new Parser().useContextVars().array('records', {
         0x1a: df3VelocityData,
         0x1f: df3VelocityData,
         0x20: df3SpectrumData,
+        0x26: df7CurrentProfileData,
         0x30: waveData,
         0xa0: new Parser().string('data', { length: 'dataSize' }),
       },
