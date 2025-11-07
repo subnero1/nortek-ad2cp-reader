@@ -51,7 +51,7 @@ async function addFile(file) {
     <h2>Device</h2>
     <DeviceCharts />
 
-    <template v-if="counts[0x16 /* Average */] > 0">
+    <template v-if="counts[0x16 /* Average */] > 0 || counts[0x26 /* df7CurrentProfileData */] > 0">
       <h2>Currents</h2>
       <CurrentCharts />
     </template>

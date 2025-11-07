@@ -22,7 +22,7 @@ const direction = ref('total')
 const allData = computed(() => {
   const allData = {}
   for (const record of records.value) {
-    if (record.dataSeriesId !== 0x16) continue
+    if (record.dataSeriesId !== 0x16 && record.dataSeriesId !== 0x26) continue
     const nCells = record.numberOfCells
     const nBeams = record.numberOfBeams
     const vel = record.velocityData
