@@ -893,7 +893,9 @@ const waveData = new Parser()
   .floatle('cutOffFrequency')
   .floatle('processingTime')
   .uint16le('numberOfZeroCrossings')
-  .string('versionString', { length: 4 })
+  .string('versionString', {
+    length: 4,
+  })
   .seek(54)
   .saveOffset('__current__')
   .seek(function () {
