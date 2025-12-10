@@ -20,8 +20,9 @@ const timeSeriesOptions = Object.freeze({
 
 const data = computed(() => {
   const tiltBins = Array.from({ length: 91 }, () => 0)
-  const dirBins = Array.from({ length: 144 }, () => 0)
-  const headingBins = Array.from({ length: 144 }, () => 0)
+  const xyDirBins = Array.from({ length: 180 }, () => 0)
+  const compassDirBins = Array.from({ length: 180 }, () => 0)
+  const headingBins = Array.from({ length: 180 }, () => 0)
 
   for (const record of records.value) {
     const heading = record.heading
@@ -38,23 +39,28 @@ const data = computed(() => {
       const tilt = (180 / Math.PI) * Math.abs(Math.acos(cosPitch * cosRoll))
       tiltBins[Math.round((tiltBins.length / 90) * tilt)] += 1
 
-      const dir =
+      const xyDir = (180 / Math.PI) * Math.atan2(-sinRoll, sinPitch * cosRoll)
+      xyDirBins[Math.floor((xyDirBins.length / 360) * (xyDir + 180))] += 1
+
+      const compassDir =
         (180 / Math.PI) *
         Math.atan2(
           sinHeading * sinPitch * cosRoll - cosHeading * sinRoll,
           cosHeading * sinPitch * cosRoll + sinHeading * sinRoll,
         )
-      dirBins[Math.ceil((dirBins.length / 360) * (dir + 180))] += 1
+      compassDirBins[Math.floor((compassDirBins.length / 360) * (compassDir + 180))] += 1
 
-      headingBins[Math.ceil((headingBins.length / 360) * heading)] += 1
+      headingBins[Math.floor((headingBins.length / 360) * (heading - 90))] += 1
     }
   }
   const tiltBinsMax = Math.max(...tiltBins)
-  const dirBinsMax = Math.max(...dirBins)
+  const xyDirBinsMax = Math.max(...xyDirBins)
+  const compassDirBinsMax = Math.max(...compassDirBins)
   const headingBinsMax = Math.max(...headingBins)
   return {
     tiltBins: tiltBins.map((count) => count / tiltBinsMax),
-    dirBins: dirBins.map((count) => count / dirBinsMax),
+    xyDirBins: xyDirBins.map((count) => count / xyDirBinsMax),
+    compassDirBins: compassDirBins.map((count) => count / compassDirBinsMax),
     headingBins: headingBins.map((count) => count / headingBinsMax),
   }
 })
@@ -185,50 +191,88 @@ const ticksLineWidth = 10
       </div>
       <div class="chart">
         <h3>Tilt Direction</h3>
-        <VChart
-          :option="{
-            series: {
-              type: 'gauge',
-              startAngle: 0,
-              endAngle: 360,
-              min: 360,
-              max: 0,
-              radius: '90%',
-              splitNumber: 4,
-              splitLine: {
-                length: ticksLineWidth,
-                distance: -(ticksLineWidth + gaugeLineWidth) / 2,
-              },
-              axisTick: {
-                splitNumber: 2,
-                length: ticksLineWidth,
-                distance: -(ticksLineWidth + gaugeLineWidth) / 2,
-              },
-              axisLabel: {
-                distance: gaugeLineWidth + 10,
-                formatter: (angle) => ({ 0: 'E', 90: 'N', 180: 'W', 270: 'S', 360: '' })[angle],
-              },
-              axisLine: {
-                lineStyle: {
-                  width: gaugeLineWidth,
-                  color: data.dirBins.map((frac, index) => [
-                    (index + 1) / data.dirBins.length,
-                    `rgba(255, 0, 0, ${frac})`,
-                  ]),
+
+        <div class="flex flex-row smaller-charts">
+          <VChart
+            :option="{
+              series: {
+                type: 'gauge',
+                startAngle: 0,
+                endAngle: 360,
+                min: 360,
+                max: 0,
+                radius: '90%',
+                splitNumber: 4,
+                splitLine: {
+                  length: ticksLineWidth,
+                  distance: -(ticksLineWidth + gaugeLineWidth) / 2,
+                },
+                axisTick: {
+                  splitNumber: 2,
+                  length: ticksLineWidth,
+                  distance: -(ticksLineWidth + gaugeLineWidth) / 2,
+                },
+                axisLabel: {
+                  distance: gaugeLineWidth + 10,
+                  formatter: (angle) => ({ 0: 'X', 90: 'Y', 180: '', 270: '', 360: '' })[angle],
+                },
+                axisLine: {
+                  lineStyle: {
+                    width: gaugeLineWidth,
+                    color: data.xyDirBins.map((frac, index) => [
+                      (index + 1) / data.xyDirBins.length,
+                      `rgba(255, 0, 0, ${frac})`,
+                    ]),
+                  },
                 },
               },
-            },
-          }"
-        />
+            }"
+          />
+          <VChart
+            :option="{
+              series: {
+                type: 'gauge',
+                startAngle: 90,
+                endAngle: 450,
+                min: 360,
+                max: 0,
+                radius: '90%',
+                splitNumber: 4,
+                splitLine: {
+                  length: ticksLineWidth,
+                  distance: -(ticksLineWidth + gaugeLineWidth) / 2,
+                },
+                axisTick: {
+                  splitNumber: 2,
+                  length: ticksLineWidth,
+                  distance: -(ticksLineWidth + gaugeLineWidth) / 2,
+                },
+                axisLabel: {
+                  distance: gaugeLineWidth + 10,
+                  formatter: (angle) => ({ 0: 'N', 90: 'W', 180: 'S', 270: 'E', 360: '' })[angle],
+                },
+                axisLine: {
+                  lineStyle: {
+                    width: gaugeLineWidth,
+                    color: data.compassDirBins.map((frac, index) => [
+                      (index + 1) / data.compassDirBins.length,
+                      `rgba(255, 0, 0, ${frac})`,
+                    ]),
+                  },
+                },
+              },
+            }"
+          />
+        </div>
       </div>
       <div class="chart">
-        <h3>Heading</h3>
+        <h3>Heading (y axis)</h3>
         <VChart
           :option="{
             series: {
               type: 'gauge',
-              startAngle: 0,
-              endAngle: 360,
+              startAngle: 90,
+              endAngle: 450,
               min: 360,
               max: 0,
               radius: '90%',
@@ -244,7 +288,7 @@ const ticksLineWidth = 10
               },
               axisLabel: {
                 distance: gaugeLineWidth + 10,
-                formatter: (angle) => ({ 0: 'E', 90: 'N', 180: 'W', 270: 'S', 360: '' })[angle],
+                formatter: (angle) => ({ 0: 'N', 90: 'W', 180: 'S', 270: 'E', 360: '' })[angle],
               },
               axisLine: {
                 lineStyle: {
@@ -275,5 +319,9 @@ div.chart > h3 {
 div.chart > .echarts {
   height: 150px;
   width: 300px;
+}
+div.smaller-charts > .echarts {
+  height: 150px;
+  width: 150px;
 }
 </style>
