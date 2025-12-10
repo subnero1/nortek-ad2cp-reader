@@ -80,6 +80,7 @@ const rawData = computed(() => {
 })
 
 const gaugeLineWidth = 20
+const ticksLineWidth = 10
 </script>
 
 <template>
@@ -160,13 +161,13 @@ const gaugeLineWidth = 20
               radius: '170%',
               splitNumber: 3,
               splitLine: {
-                length: gaugeLineWidth,
-                distance: -gaugeLineWidth,
+                length: ticksLineWidth,
+                distance: -(ticksLineWidth + gaugeLineWidth) / 2,
               },
               axisTick: {
                 splitNumber: 3,
-                length: gaugeLineWidth,
-                distance: -gaugeLineWidth,
+                length: ticksLineWidth,
+                distance: -(ticksLineWidth + gaugeLineWidth) / 2,
               },
               axisLabel: { distance: gaugeLineWidth + 10 },
               axisLine: {
@@ -194,8 +195,15 @@ const gaugeLineWidth = 20
               max: 0,
               radius: '90%',
               splitNumber: 4,
-              splitLine: { length: gaugeLineWidth, distance: -gaugeLineWidth },
-              axisTick: { splitNumber: 2, length: gaugeLineWidth, distance: -gaugeLineWidth },
+              splitLine: {
+                length: ticksLineWidth,
+                distance: -(ticksLineWidth + gaugeLineWidth) / 2,
+              },
+              axisTick: {
+                splitNumber: 2,
+                length: ticksLineWidth,
+                distance: -(ticksLineWidth + gaugeLineWidth) / 2,
+              },
               axisLabel: {
                 distance: gaugeLineWidth + 10,
                 formatter: (angle) => ({ 0: 'E', 90: 'N', 180: 'W', 270: 'S', 360: '' })[angle],
@@ -225,8 +233,15 @@ const gaugeLineWidth = 20
               max: 0,
               radius: '90%',
               splitNumber: 4,
-              splitLine: { length: gaugeLineWidth, distance: -gaugeLineWidth },
-              axisTick: { splitNumber: 2, length: gaugeLineWidth, distance: -gaugeLineWidth },
+              splitLine: {
+                length: ticksLineWidth,
+                distance: -(ticksLineWidth + gaugeLineWidth) / 2,
+              },
+              axisTick: {
+                splitNumber: 2,
+                length: ticksLineWidth,
+                distance: -(ticksLineWidth + gaugeLineWidth) / 2,
+              },
               axisLabel: {
                 distance: gaugeLineWidth + 10,
                 formatter: (angle) => ({ 0: 'E', 90: 'N', 180: 'W', 270: 'S', 360: '' })[angle],
