@@ -14,7 +14,7 @@ function quantile(array, q) {
   array = array.sort()
   const x = array.length * q
   const a = Math.floor(x)
-  const b = Math.ceil(x)
+  const b = Math.floor(x + 1)
   return ((b - x) * array[a] + (x - a) * array[b]) / (b - a)
 }
 
