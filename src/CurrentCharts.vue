@@ -41,10 +41,14 @@ const allData = computed(() => {
     data.dateTime.push(record.dateTime.valueOf())
     if (record.coordinateSystemLabel !== 'BEAM') {
       for (let i = 0; i < nCells; i++) {
-        const vx = vel[0 * nCells + i]
-        const vy = vel[1 * nCells + i]
-        const vz =
+        const maybeVx = vel[0 * nCells + i]
+        const maybeVy = vel[1 * nCells + i]
+        const maybeVz =
           nBeams == 3 ? vel[2 * nCells + i] : 0.5 * (vel[2 * nCells + i] + vel[3 * nCells + i])
+        // Remove flagged readings (N3015-007_Integrators-Guide-AD2CP_0725.pdf, Section 8)
+        const vx = maybeVx !== -32.768 ? maybeVx : 0
+        const vy = maybeVy !== -32.768 ? maybeVy : 0
+        const vz = maybeVz !== -32.768 ? maybeVz : 0
         if (direction.value === 'total') {
           data.cells[i].velocity.push(Math.hypot(vx, vy, vz))
         }
