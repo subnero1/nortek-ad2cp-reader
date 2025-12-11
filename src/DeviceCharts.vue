@@ -50,7 +50,8 @@ const data = computed(() => {
         )
       compassDirBins[Math.floor((compassDirBins.length / 360) * (compassDir + 180))] += 1
 
-      headingBins[Math.floor((headingBins.length / 360) * (heading - 90))] += 1
+      headingBins[Math.floor((headingBins.length / 360) * (heading + 270)) % headingBins.length] +=
+        1
     }
   }
   const tiltBinsMax = Math.max(...tiltBins)
