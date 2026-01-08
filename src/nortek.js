@@ -431,12 +431,7 @@ const df3VelocityData = new Parser()
   .array('amplitudeData', {
     type: new Parser().uint8(),
     length: function () {
-      return (
-        this['numberOfBeams'] *
-        this['numberOfCells'] *
-        this['hasAmplitudeData'] *
-        this['hasCorrelationData']
-      )
+      return this['numberOfBeams'] * this['numberOfCells'] * this['hasAmplitudeData']
     },
     formatter: function (values) {
       return values.map((value) => 0.5 * value)
