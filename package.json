@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",
-    "binary-parser": "^2.2.1",
+    "binary-parser": "^2.3.0",
     "dayjs": "^1.11.13",
     "echarts": "^5.6.0",
     "tailwindcss": "^4.1.11",
