@@ -13,27 +13,28 @@
     "release": "node scripts/release.js"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.2.1",
+    "@tailwindcss/vite": "^4.2.2",
     "binary-parser": "^2.3.0",
-    "dayjs": "^1.11.19",
+    "dayjs": "^1.11.20",
     "echarts": "^5.6.0",
-    "tailwindcss": "^4.2.1",
-    "vue": "^3.5.29",
-    "vue-echarts": "^7.0.3"
+    "tailwindcss": "^4.2.2",
+    "vue": "^3.5.30",
+    "vue-echarts": "^7.0.3",
+    "@tailwindcss/typography": "^0.5.19",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "daisyui": "^5.5.19",
+    "generate-license-file": "^4.1.1",
+    "vite": "^7.3.1",
+    "vite-plugin-singlefile": "^2.3.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.3",
-    "@tailwindcss/typography": "^0.5.19",
-    "@vitejs/plugin-vue": "^6.0.4",
+    "nortek-ad2cp-parser": "git+https://github.com/subnero1/nortek-ad2cp-parser.git",
+    "@eslint/js": "^9.39.4",
     "@vue/eslint-config-prettier": "^10.2.0",
-    "daisyui": "^5.5.19",
-    "eslint": "^9.39.3",
+    "eslint": "^9.39.4",
     "eslint-plugin-vue": "~10.3.0",
-    "generate-license-file": "^4.1.1",
     "globals": "^16.5.0",
     "prettier": "3.6.2",
-    "vite": "^7.3.1",
-    "vite-plugin-singlefile": "^2.3.0",
-    "vite-plugin-vue-devtools": "^8.0.7"
+    "vite-plugin-vue-devtools": "^8.1.0"
   }
 }

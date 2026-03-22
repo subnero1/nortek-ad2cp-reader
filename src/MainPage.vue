@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { parseAd2cp } from './nortek.js'
+import { parseAd2cp } from 'nortek-ad2cp-parser'
 import { records, counts } from './store.js'
 import CountsTable from './CountsTable.vue'
 import DeviceCharts from './DeviceCharts.vue'
