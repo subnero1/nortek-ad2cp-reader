@@ -20,4 +20,4 @@ This requires [node.js](https://nodejs.org/) to be installed.
 
 ## Contributing
 
-Want to add your own custom plot? Spotted something that's not quite right? Raise an issue or PR and let us know! However, please be advised that we may at some point integrate parts or all of this tool into our [SWIS-ADCP product](https://subnero.com/solutions/swis) (under the usual T&C of the MIT license). By contributing to this repository, you are acknowledging that you are okay with this.
+Want to add your own custom plot? Spotted something that's not quite right? Raise an issue or PR and let us know! However, please be advised that we may at some point integrate parts or all of this tool into our [SWIS-ADCP product](https://subnero.com/solutions/swis) (under the usual T&C of the MIT license). By contributing to this repository, you acknowledge that you are okay with this.
