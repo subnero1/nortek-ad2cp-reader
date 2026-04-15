@@ -190,7 +190,7 @@ use([SVGRenderer, LineChart, GridComponent, TooltipComponent, LegendComponent])
       '\n' +
       records
         .map((record) => [
-          record.dateTime?.format('YYYY-MM-DDThh:mm:ss'),
+          record.dateTime?.format('YYYY-MM-DDTHH:mm:ss'),
           record.waveData?.height0?.toFixed(2),
           record.waveData?.height3?.toFixed(2),
           record.waveData?.height10?.toFixed(2),

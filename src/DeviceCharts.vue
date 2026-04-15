@@ -72,7 +72,7 @@ const rawData = computed(() => {
   ]
   for (const record of records.value) {
     const line = [
-      record.dateTime?.format('YYYY-MM-DDThh:mm:ss'),
+      record.dateTime?.format('YYYY-MM-DDTHH:mm:ss'),
       record.batteryVoltage?.toFixed(1),
       record.temperature?.toFixed(2),
       record.pressure?.toFixed(3),
