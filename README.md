@@ -11,9 +11,9 @@ Just [download](https://github.com/subnero1/nortek-ad2cp-reader/releases/) and d
 ## Building
 
 ```bash
-npm install
-npm run dev  # For developing
-npm build  # To make the final build
+pnpm install
+pnpm run dev  # For developing
+pnpm build  # To make the final build
 ```
 
 This requires [node.js](https://nodejs.org/) to be installed.
