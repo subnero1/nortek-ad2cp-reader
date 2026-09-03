@@ -4,7 +4,7 @@ import MainPage from './MainPage.vue'
 import LicensePage from '../build/LicensePage.vue'
 const showLicense = ref(false)
 
-// Injected from `npm run release`
+// Injected from `pnpm run release`
 const version = import.meta.env.VITE_APP_VERSION ?? 'dev-build'
 </script>
 

@@ -40,7 +40,7 @@ execSync('git push origin ' + tag, { stdio: 'ignore' })
 
 // Build the project
 console.log('Building project...')
-execSync('npm run build', {
+execSync('pnpm run build', {
   env: { ...process.env, VITE_APP_VERSION: tag },
   stdio: 'inherit',
 })
