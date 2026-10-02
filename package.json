@@ -23,7 +23,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "@vitejs/plugin-vue": "^6.0.5",
     "daisyui": "^5.5.19",
-    "generate-license-file": "^4.1.1",
+    "generate-license-file": "^4.2.5",
     "vite": "^7.3.1",
     "vite-plugin-singlefile": "^2.3.2"
   },
